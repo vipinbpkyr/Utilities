@@ -1,0 +1,144 @@
+
+    public static String getTelephonyCountryCode(@Nullable Context context) {
+        if (context != null) {
+            TelephonyManager telephonyManager =
+                    (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (telephonyManager != null) {
+                String countryCode = telephonyManager.getNetworkCountryIso();
+                if (!TextUtils.isEmpty(countryCode)) {
+                    return toUpperInvariant(countryCode);
+                }
+            }
+        }
+        return toUpperInvariant(Locale.getDefault().getCountry());
+    }
+
+    /**
+     * Converts text to upper case using {@link Locale#US}.
+     *
+     * @param text The text to convert.
+     * @return The upper case text, or null if {@code text} is null.
+     */
+    public static String toUpperInvariant(@Nullable String text) {
+        return text == null ? text : text.toUpperCase(Locale.US);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+
+       // Toast.makeText(this, "onLowMemory ", Toast.LENGTH_LONG).show();
+        showLowMemoryDialog("onLowMemory");
+    }
+
+    /**
+     * Release memory when the UI becomes hidden or when system resources become low.
+     * @param level the memory-related event that was raised.
+     */
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+
+        // Determine which lifecycle or system event was raised.
+        switch (level) {
+
+            case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN:
+
+                /*
+                   Release any UI objects that currently hold memory.
+
+                   "release your UI resources" is actually about things like caches.
+                   You usually don't have to worry about managing views or UI components because the OS
+                   already does that, and that's why there are all those callbacks for creating, starting,
+                   pausing, stopping and destroying an activity.
+                   The user interface has moved to the background.
+                */
+
+               // showMemoryDialog("Release any UI objects that currently hold memory.");
+                break;
+
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE:
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW:
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL:
+
+                /*
+                   Release any memory that your app doesn't need to run.
+
+                   The device is running low on memory while the app is running.
+                   The event raised indicates the severity of the memory-related event.
+                   If the event is TRIM_MEMORY_RUNNING_CRITICAL, then the system will
+                   begin killing background processes.
+                */
+                showMemoryDialog("Release any memory that your app doesn't need to run.\n" +
+                        "\n" +
+                        "                   The device is running low on memory while the app is running.\n" +
+                        "                   The event raised indicates the severity of the memory-related event.\n" +
+                        "                   If the event is TRIM_MEMORY_RUNNING_CRITICAL, then the system will\n" +
+                        "                   begin killing background processes.");
+
+                break;
+
+            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND:
+            case ComponentCallbacks2.TRIM_MEMORY_MODERATE:
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE:
+
+                /*
+                   Release as much memory as the process can.
+                   The app is on the LRU list and the system is running low on memory.
+                   The event raised indicates where the app sits within the LRU list.
+                   If the event is TRIM_MEMORY_COMPLETE, the process will be one of
+                   the first to be terminated.
+                */
+
+                showMemoryDialog("Release as much memory as the process can.\n" +
+                        "                   The app is on the LRU list and the system is running low on memory.\n" +
+                        "                   The event raised indicates where the app sits within the LRU list.\n" +
+                        "                   If the event is TRIM_MEMORY_COMPLETE, the process will be one of\n" +
+                        "                   the first to be terminated.");
+
+                break;
+
+            default:
+                /*
+                  Release any non-critical data structures.
+                  The app received an unrecognized memory level value
+                  from the system. Treat this as a generic low-memory message.
+                */
+                showMemoryDialog("Release any non-critical data structures.\n" +
+                        "                  The app received an unrecognized memory level value\n" +
+                        "                  from the system. Treat this as a generic low-memory message.");
+                break;
+        }
+    }
+
+    /**
+     * TODO This method is used for debugging  purposes, need to be removed from release version.
+     */
+    private void showMemoryDialog(String message) {
+
+        AlertDialog.Builder confirmDialog = new AlertDialog.Builder(this);
+        confirmDialog.setCancelable(true);
+        confirmDialog.setTitle("Release Memory!");
+        confirmDialog.setMessage(message);
+        confirmDialog.setPositiveButton("OK", (dialog, which) -> {
+
+        });
+        confirmDialog.setNegativeButton("Cancel", null);
+        confirmDialog.show();
+    }
+
+    /**
+     * TODO This method is used for debugging  purposes, need to be removed from release version.
+     */
+    private void showLowMemoryDialog(String message) {
+
+        AlertDialog.Builder confirmDialog = new AlertDialog.Builder(this);
+        confirmDialog.setCancelable(true);
+        confirmDialog.setTitle("Low Memory!");
+        confirmDialog.setMessage(message);
+        confirmDialog.setPositiveButton("OK", (dialog, which) -> {
+
+        });
+        confirmDialog.setNegativeButton("Cancel", null);
+        confirmDialog.show();
+    }
